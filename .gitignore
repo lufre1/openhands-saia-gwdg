@@ -1,0 +1,5 @@
+# Generated installer (never edit directly)
+install-openhands-saia.sh
+
+# Backup directories
+*.bak-*
