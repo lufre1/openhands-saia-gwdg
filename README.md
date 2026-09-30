@@ -2,7 +2,7 @@
 
 GWDG SAIA provider for **OpenHands** (CLI)
 
-This repo provides an installer that configures the [GWDG SAIA](https://chat-ai.academiccloud.de/) OpenAI-compatible API as the LLM provider for OpenHands, giving you access to 16 ready models including Qwen, DeepSeek, GLM, and more.
+This repo provides an installer that configures the [GWDG SAIA](https://chat-ai.academiccloud.de/) OpenAI-compatible API as the LLM provider for OpenHands, giving you access to 14 ready models including Qwen, DeepSeek, GLM, and more.
 
 ## Quick start
 
@@ -28,7 +28,7 @@ Or see `SETUP.md` for detailed instructions and troubleshooting.
 | `install-openhands-saia.sh` | Self-contained installer (generated; never edit directly) |
 | `build.sh` | Regenerates the installer from source files |
 | `src/add-saia-openhands.sh` | Live source script (portable key sourcing + config write) |
-| `src/models.txt` | List of 16 ready SAIA models |
+| `src/models.txt` | List of 14 ready SAIA models |
 | `test/test-config.sh` | Smoke test for the config-write logic (not packed) |
 
 ## Architecture

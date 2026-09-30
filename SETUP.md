@@ -2,7 +2,7 @@
 
 ## Summary
 
-This installer configures the GWDG SAIA provider in OpenHands (CLI) with 16 ready models.
+This installer configures the GWDG SAIA provider in OpenHands (CLI) with 14 ready models.
 
 ## Prerequisites
 
@@ -75,23 +75,21 @@ openhands --task "Say hello"
 openhands
 
 # Or start with a specific model
-openhands --model deepseek-v4-flash-0731
+openhands --model openai/deepseek-v4-flash-0731
 ```
 
 ### Available models
 
-All 16 ready SAIA models:
+All 14 ready SAIA models:
 
 - apertus-70b-instruct-2509
 - devstral-2-123b-instruct-2512
 - qwen3.8-27b
 - deepseek-v4-flash-0731
-- qwen3.5-122b-a10b
 - glm-5.3-flash
 - qwen3-coder-next
 - qwen3-omni-30b-a3b-instruct
 - mistral-medium-3.5-128b
-- glm-4.7
 - qwen3.5-397b-a17b
 - gemma-4-31b-it
 - qwen3.6-35b-a3b
@@ -106,14 +104,18 @@ The provider is stored in `~/.openhands/agent_settings.json`:
 ```json
 {
   "llm": {
-    "model": "deepseek-v4-flash-0731",
+    "model": "openai/deepseek-v4-flash-0731",
     "api_key": "<your-key>",
     "base_url": "https://chat-ai.academiccloud.de/v1",
-    "custom_llm_provider": "openai",
     "drop_params": true
   }
 }
 ```
+
+**Note**: The model name is prefixed with `openai/`. OpenHands passes the model
+string straight to LiteLLM, which needs the provider encoded in the model name
+to route to the OpenAI-compatible `base_url` (a separate provider field is
+ignored). Without the prefix you get `LLM Provider NOT provided`.
 
 **Note**: OpenHands stores the API key in plaintext in `agent_settings.json`. The file has 600 permissions (owner read/write only).
 

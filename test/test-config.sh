@@ -7,6 +7,7 @@
 # OpenHands installs. Not packed into the installer.
 #
 set -euo pipefail
+unset SAIA_API_KEY   # a key exported in the caller's shell would mask the reuse checks
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 TMP="$(mktemp -d)"
@@ -19,10 +20,10 @@ OPENHANDS_DATA_DIR="$TMP/a" SAIA_API_KEY="key-1" ./src/add-saia-openhands.sh >/d
 python3 - "$TMP/a/agent_settings.json" <<'PY' || fail "fresh write"
 import json, sys
 d = json.load(open(sys.argv[1]))["llm"]
-assert d["model"] == "deepseek-v4-flash-0731", d
+assert d["model"] == "openai/deepseek-v4-flash-0731", d
 assert d["api_key"] == "key-1", d
 assert d["base_url"] == "https://chat-ai.academiccloud.de/v1", d
-assert d["custom_llm_provider"] == "openai", d
+assert "custom_llm_provider" not in d, d
 PY
 [[ "$(stat -c '%a' "$TMP/a/agent_settings.json")" == "600" ]] || fail "perms not 600"
 echo "PASS: fresh write (env key, perms 600)"

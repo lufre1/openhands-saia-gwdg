@@ -206,10 +206,12 @@ llm = data.get("llm", {})
 if not isinstance(llm, dict):
     llm = {}
 
-llm["model"] = default
+# OpenHands CLI passes the model string straight to litellm, which needs the
+# provider encoded in the model name (it ignores a separate provider field).
+# Prefix with "openai/" so litellm routes to the OpenAI-compatible base_url.
+llm["model"] = f"openai/{default}"
 llm["api_key"] = key
 llm["base_url"] = base
-llm["custom_llm_provider"] = "openai"
 llm["drop_params"] = True
 
 data["llm"] = llm
@@ -229,4 +231,4 @@ echo "  Default model: $DEFAULT_MODEL"
 echo "  Models: ${#MODELS[@]} ready SAIA models"
 echo ""
 echo "Usage: openhands                       # SAIA is the default model"
-echo "       openhands --model $DEFAULT_MODEL"
+echo "       openhands --model openai/$DEFAULT_MODEL"
