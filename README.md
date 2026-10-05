@@ -17,6 +17,9 @@ OpenHands config, so you only ever type it once.
 This one-shot installer:
 - Installs OpenHands (if missing) via the official installer (`curl -fsSL https://install.openhands.dev/install.sh | sh`)
 - Writes `~/.openhands/agent_settings.json` with the SAIA provider (base URL, API key, default model)
+- With extra keys (`SAIA_API_KEYS_EXTRA="key2,key3"`), routes OpenHands through a local
+  key-rotating proxy that swaps keys automatically when one is revoked, drained or
+  rate limited (see `SETUP.md` → *Multiple keys*)
 - Works on macOS, Linux, and WSL
 
 Or see `SETUP.md` for detailed instructions and troubleshooting.
@@ -29,7 +32,9 @@ Or see `SETUP.md` for detailed instructions and troubleshooting.
 | `build.sh` | Regenerates the installer from source files |
 | `src/add-saia-openhands.sh` | Live source script (portable key sourcing + config write) |
 | `src/models.txt` | List of 14 ready SAIA models |
-| `test/test-config.sh` | Smoke test for the config-write logic (not packed) |
+| `src/saia_keyring.py`, `src/saia-keyring.sh` | Key-rotating proxy and its install logic, vendored from `opencode-extras/keyring/` (never edit here) |
+| `test/test-config.sh` | Smoke test for the config-write logic and the key swap (not packed) |
+| `test/fake-saia.py` | Fake SAIA endpoint for the key-swap test (not packed) |
 
 ## Architecture
 
@@ -39,7 +44,8 @@ SAIA_API_KEY → install-openhands-saia.sh → [OpenHands install] → src/add-s
 
 ## Maintaining
 
-After changing `src/add-saia-openhands.sh` or `src/models.txt`, regenerate the installer:
+After changing `src/add-saia-openhands.sh` or `src/models.txt`, regenerate the installer
+(the keyring files are synced in by `opencode-extras/keyring/sync.sh`, which also rebuilds):
 
 ```bash
 ./build.sh

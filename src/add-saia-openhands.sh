@@ -7,10 +7,16 @@ set -euo pipefail
 # Writes ~/.openhands/agent_settings.json with an `llm` block pointing at the
 # GWDG SAIA OpenAI-compatible API.
 #
+# With extra keys (SAIA_API_KEYS_EXTRA / --extra-keys / --extra-keys-file)
+# OpenHands is pointed at the local saia-keyring proxy instead, which swaps to
+# the next key when the active one is revoked, drained or rate limited
+# (saia-keyring.sh).
+#
 # Usage:
 #   SAIA_API_KEY="your-key" ./add-saia-openhands.sh
 #   ./add-saia-openhands.sh --key "your-key"
 #   ./add-saia-openhands.sh --key-file ~/.local/share/opencode/auth.json
+#   SAIA_API_KEYS_EXTRA="key2,key3" ./add-saia-openhands.sh --key "your-key"
 #
 # Note: OpenHands stores the API key in plaintext in agent_settings.json
 # (chmod 600). The key is written regardless of --api-key-env, matching how
@@ -21,8 +27,11 @@ MODELS_FILE="${SCRIPT_DIR}/models.txt"
 DATA_DIR="${OPENHANDS_DATA_DIR:-$HOME/.openhands}"
 CONFIG_FILE="$DATA_DIR/agent_settings.json"
 DEFAULT_MODEL="${SAIA_DEFAULT_MODEL:-deepseek-v4-flash-0731}"
-BASE_URL="${SAIA_BASE_URL:-https://chat-ai.academiccloud.de/v1}"
+# Base URL override for tests and local gateways (default: production SAIA).
+SAIA_BASE_URL="${SAIA_BASE_URL:-https://chat-ai.academiccloud.de/v1}"
 FORCE_KEY=0
+# shellcheck source=saia-keyring.sh
+source "${SCRIPT_DIR}/saia-keyring.sh"
 
 # ── Parse arguments ──────────────────────────────────────────────────
 KEY=""
@@ -43,6 +52,10 @@ while [[ $# -gt 0 ]]; do
       FORCE_KEY=1
       shift
       ;;
+    --extra-keys|--extra-keys-file|--keyring|--no-keyring)
+      keyring_arg "$@"
+      shift "$KEYRING_SHIFT"
+      ;;
     -h|--help)
       echo "Usage: SAIA_API_KEY=... ./add-saia-openhands.sh [--key <key> | --key-file <path>] [--force-key]"
       echo ""
@@ -50,6 +63,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --key <value>       SAIA API key (overrides SAIA_API_KEY env)"
       echo "  --key-file <path>   File containing the SAIA API key"
       echo "  --force-key         Replace an existing SAIA key in the config"
+      keyring_usage
       echo "  -h, --help          Show this help"
       echo ""
       echo "The API key is taken from:"
@@ -68,11 +82,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Pull the key out of a previous install so a reinstall does not ask again.
-# Scoped to the llm block that points at the SAIA base URL, so a config that
-# uses a different provider is left alone.
+# Scoped to the llm block that points at SAIA — directly, or through the local
+# saia-keyring proxy — so a config that uses a different provider is left alone.
 key_from_config() {
   [[ -f "$CONFIG_FILE" ]] || return 0
-  python3 - "$CONFIG_FILE" <<'PYEOF'
+  KR_CONFIG="$KEYRING_CONFIG" python3 - "$CONFIG_FILE" <<'PYEOF'
 import json, os, sys
 path = sys.argv[1]
 try:
@@ -80,8 +94,13 @@ try:
         data = json.load(fh)
 except Exception:
     sys.exit(0)
+try:
+    port = int(json.load(open(os.environ["KR_CONFIG"])).get("port") or 8788)
+except Exception:
+    port = 8788
 llm = data.get("llm", {})
-if isinstance(llm, dict) and llm.get("base_url", "").startswith("https://chat-ai.academiccloud.de"):
+base = llm.get("base_url", "") if isinstance(llm, dict) else ""
+if base.startswith("https://chat-ai.academiccloud.de") or base.rstrip("/") == f"http://127.0.0.1:{port}/v1":
     print(llm.get("api_key", ""))
 PYEOF
   return 0
@@ -177,13 +196,17 @@ if [[ -f "$CONFIG_FILE" ]] && [[ $FORCE_KEY -eq 0 ]] && [[ -z "$KEY" && -z "${SA
   fi
 fi
 
+# ── Automatic key swap (2+ keys) ─────────────────────────────────────
+# Sets SAIA_EFFECTIVE_BASE_URL: the local proxy when it is up, else SAIA itself.
+keyring_setup "$SAIA_KEY"
+
 echo "Writing GWDG SAIA provider to OpenHands config..."
 echo "Config file: $CONFIG_FILE"
-echo "Base URL: $BASE_URL"
+echo "Base URL: $SAIA_EFFECTIVE_BASE_URL"
 echo "Default model: $DEFAULT_MODEL"
 echo "Models available: ${#MODELS[@]}"
 
-SAIA_CONFIG="$CONFIG_FILE" SAIA_KEY="$SAIA_KEY" SAIA_BASE="$BASE_URL" \
+SAIA_CONFIG="$CONFIG_FILE" SAIA_KEY="$SAIA_KEY" SAIA_BASE="$SAIA_EFFECTIVE_BASE_URL" \
 SAIA_DEFAULT="$DEFAULT_MODEL" SAIA_MODELS="$(printf '%s\n' "${MODELS[@]}")" \
 python3 <<'PYEOF'
 import json, os
@@ -227,6 +250,7 @@ PYEOF
 echo ""
 echo "✓ GWDG SAIA provider installed successfully!"
 echo "  Config: $CONFIG_FILE"
+echo "  Base URL: $SAIA_EFFECTIVE_BASE_URL"
 echo "  Default model: $DEFAULT_MODEL"
 echo "  Models: ${#MODELS[@]} ready SAIA models"
 echo ""
