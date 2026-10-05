@@ -65,5 +65,14 @@ assert json.load(open(sys.argv[1]))["llm"]["api_key"] == "key-4"
 PY
 echo "PASS: --force-key replaces key"
 
+# SAIA_BASE_URL override (used by the benchmark's local gateway)
+OPENHANDS_DATA_DIR="$TMP/ov" SAIA_BASE_URL="http://127.0.0.1:9/v1" SAIA_API_KEY="key-5" \
+  ./src/add-saia-openhands.sh >/dev/null 2>&1 || fail "installer failed with SAIA_BASE_URL set"
+python3 - "$TMP/ov/agent_settings.json" <<'PY' || fail "SAIA_BASE_URL override"
+import json, sys
+assert json.load(open(sys.argv[1]))["llm"]["base_url"] == "http://127.0.0.1:9/v1"
+PY
+echo "PASS: SAIA_BASE_URL override"
+
 echo ""
 echo "All tests passed."

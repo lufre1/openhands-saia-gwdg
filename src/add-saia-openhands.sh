@@ -21,7 +21,7 @@ MODELS_FILE="${SCRIPT_DIR}/models.txt"
 DATA_DIR="${OPENHANDS_DATA_DIR:-$HOME/.openhands}"
 CONFIG_FILE="$DATA_DIR/agent_settings.json"
 DEFAULT_MODEL="${SAIA_DEFAULT_MODEL:-deepseek-v4-flash-0731}"
-BASE_URL="https://chat-ai.academiccloud.de/v1"
+BASE_URL="${SAIA_BASE_URL:-https://chat-ai.academiccloud.de/v1}"
 FORCE_KEY=0
 
 # ── Parse arguments ──────────────────────────────────────────────────

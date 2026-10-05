@@ -2,7 +2,7 @@
 #
 # install-openhands-saia.sh — GENERATED FILE, DO NOT EDIT.
 # Regenerate with: ./build.sh  (in the openhands-saia repo)
-# Source: openhands-saia commit ee4e75f, packed 2026-09-30T05:54:14Z
+# Source: openhands-saia commit 54c02b4-dirty, packed 2026-10-05T10:01:23Z
 #
 # Installs the GWDG SAIA setup for OpenHands: provider + 2 source files.
 
@@ -218,7 +218,7 @@ MODELS_FILE="${SCRIPT_DIR}/models.txt"
 DATA_DIR="${OPENHANDS_DATA_DIR:-$HOME/.openhands}"
 CONFIG_FILE="$DATA_DIR/agent_settings.json"
 DEFAULT_MODEL="${SAIA_DEFAULT_MODEL:-deepseek-v4-flash-0731}"
-BASE_URL="https://chat-ai.academiccloud.de/v1"
+BASE_URL="${SAIA_BASE_URL:-https://chat-ai.academiccloud.de/v1}"
 FORCE_KEY=0
 
 # ── Parse arguments ──────────────────────────────────────────────────
