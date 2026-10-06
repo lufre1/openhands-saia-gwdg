@@ -59,7 +59,7 @@ cat ~/.openhands/agent_settings.json
 ```
 
 You should see an `llm` block pointing at `https://chat-ai.academiccloud.de/v1`
-(or at `http://127.0.0.1:8788/v1` with extra keys — see *Multiple keys* below).
+(or at `http://127.0.0.1:8788/v1` with `--keyring` — see *Multiple keys* below).
 
 ### 4. Test the provider
 
@@ -122,25 +122,25 @@ ignored). Without the prefix you get `LLM Provider NOT provided`.
 
 ## Multiple keys: automatic key swap
 
-SAIA rate limits are per key (30/min, 200/hour, 1000/day, 3000/month). Give the
-installer extra keys and OpenHands swaps to the next one by itself when the active key
-is revoked (401/403), drained (its hour/day/month budget nearly used up) or rate
-limited (429) — the same rotation the opencode setup does.
+SAIA rate limits are per key (30/min, 200/hour, 1000/day, 3000/month). Opt in with
+`--keyring`, give the installer extra keys, and OpenHands swaps to the next one by
+itself when the active key is revoked (401/403), drained (its hour/day/month budget
+nearly used up) or rate limited (429) — the same rotation the opencode setup does.
 
 ```bash
 # Extra keys via the environment, so they never show up in `ps`
-SAIA_API_KEYS_EXTRA="key2,key3" bash install-openhands-saia.sh --yes
+SAIA_API_KEYS_EXTRA="key2,key3" bash install-openhands-saia.sh --yes --keyring
 
 # Or reuse the extra keys of an opencode setup
-bash install-openhands-saia.sh --yes --extra-keys-file ~/.local/share/opencode/saia-gwdg-keys.json
+bash install-openhands-saia.sh --yes --keyring --extra-keys-file ~/.local/share/opencode/saia-gwdg-keys.json
 ```
 
-With 2+ keys the installer starts **saia-keyring**, a small local proxy
+With `--keyring` the installer starts **saia-keyring**, a small local proxy
 (`~/.local/share/saia-keyring/saia_keyring.py`, stdlib Python 3), and writes
 `"base_url": "http://127.0.0.1:8788/v1"` into the `llm` block of
 `~/.openhands/agent_settings.json` instead of SAIA. OpenHands keeps sending its usual
 key; the proxy only serves requests carrying one of the configured keys and forwards
-them on the active key. Every harness installed with extra keys shares the same proxy
+them on the active key. Every harness installed with `--keyring` shares the same proxy
 and key list. Keys are only swapped before a response starts — a stream in progress is
 never cut over. OpenHands' LLM calls run in the CLI process on your machine, so the
 loopback proxy is reachable (not from `openhands serve`'s Docker GUI, though).
@@ -151,12 +151,13 @@ loopback proxy is reachable (not from `openhands serve`'s Docker GUI, though).
 | Status | `saia-keyring status` — per-key budget, the active key, rejected keys |
 | Log | `~/.cache/saia-keyring/proxy.log` |
 | Service | systemd user unit `saia-keyring` (Linux), launchd agent `de.gwdg.saia-keyring` (macOS), otherwise a line in your shell rc |
-| Turn off | re-run with `--no-keyring`: OpenHands talks to SAIA directly again |
+| Turn off | re-run without `--keyring`: OpenHands talks to SAIA directly again |
 
-A reinstall recognises a config pointing at the proxy as SAIA, so it reuses the key
-just like a direct one. With a single key nothing changes: OpenHands talks to SAIA
-directly, as before. When every key is out, OpenHands shows why — e.g. `All 3 SAIA
-key(s) rejected by SAIA (...) — the key(s) are revoked or expired`.
+A reinstall recognises a config pointing at the proxy as SAIA, so it reuses the key just
+like a direct one. Without `--keyring` none of this is installed (extra keys are
+ignored): OpenHands talks to SAIA directly, as before. When every key is out, OpenHands
+shows why — e.g. `All 3 SAIA key(s) rejected by SAIA (...) — the key(s) are revoked or
+expired`.
 
 ## Troubleshooting
 

@@ -17,7 +17,7 @@ OpenHands config, so you only ever type it once.
 This one-shot installer:
 - Installs OpenHands (if missing) via the official installer (`curl -fsSL https://install.openhands.dev/install.sh | sh`)
 - Writes `~/.openhands/agent_settings.json` with the SAIA provider (base URL, API key, default model)
-- With extra keys (`SAIA_API_KEYS_EXTRA="key2,key3"`), routes OpenHands through a local
+- Optional, with `--keyring`: routes OpenHands through a local
   key-rotating proxy that swaps keys automatically when one is revoked, drained or
   rate limited (see `SETUP.md` → *Multiple keys*)
 - Works on macOS, Linux, and WSL

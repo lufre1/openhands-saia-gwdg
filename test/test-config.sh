@@ -92,6 +92,17 @@ assert json.load(open(sys.argv[1]))["llm"]["base_url"] == "http://127.0.0.1:9/v1
 PY
 echo "PASS: SAIA_BASE_URL override"
 
+# Extra keys without --keyring: SAIA directly, no proxy (opt-in only)
+OPENHANDS_DATA_DIR="$TMP/nk" SAIA_API_KEYS_EXTRA=extra-key SAIA_API_KEY="key-6" \
+  ./src/add-saia-openhands.sh >"$TMP/nk.log" 2>&1 || fail "installer failed with extra keys but no --keyring"
+python3 - "$TMP/nk/agent_settings.json" <<'PY' || fail "extra keys alone pointed OpenHands away from SAIA"
+import json, sys
+assert json.load(open(sys.argv[1]))["llm"]["base_url"] == "https://chat-ai.academiccloud.de/v1"
+PY
+[[ ! -e "$HOME/.config/saia-keyring" ]] || fail "keyring set up without --keyring"
+grep -q "opt-in (add --keyring)" "$TMP/nk.log" || fail "no note about the unused extra keys"
+echo "PASS: extra keys without --keyring: direct to SAIA, no proxy"
+
 # 6. Automatic key swap: two keys, the first one revoked
 FAKE_DEAD_KEYS=dead-key SEEN_FILE="$TMP/seen" COUNT_FILE="$TMP/count" \
   python3 test/fake-saia.py >"$TMP/port" 2>"$TMP/fake.log" &
