@@ -189,7 +189,7 @@ This installs the `openhands` binary to `/usr/local/bin` (or `~/.local/bin` if n
 
 If you modify `src/add-saia-openhands.sh` or `src/models.txt`, regenerate the installer.
 `src/saia_keyring.py` and `src/saia-keyring.sh` are vendored from
-`opencode-extras/keyring/` — change them there and run its `keyring/sync.sh`.
+`opencode-saia-gwdg/keyring/` — change them there and run its `keyring/sync.sh`.
 
 ```bash
 ./build.sh
