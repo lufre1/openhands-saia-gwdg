@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # install-openhands-saia.sh — GENERATED FILE, DO NOT EDIT.
-# Regenerate with: ./build.sh  (in the openhands-saia repo)
-# Source: openhands-saia commit 2c9c6ac, packed 2026-10-06T06:56:13Z
+# Regenerate with: ./build.sh  (in the openhands-saia-gwdg repo)
+# Source: openhands-saia-gwdg commit 39580ea, packed 2026-10-06T07:01:54Z
 #
 # Installs the GWDG SAIA setup for OpenHands: provider + 4 source files.
 
