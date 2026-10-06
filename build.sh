@@ -47,8 +47,8 @@ cat >"$TMP_OUT" <<OHS_GEN_HEADER
 #!/usr/bin/env bash
 #
 # install-openhands-saia.sh — GENERATED FILE, DO NOT EDIT.
-# Regenerate with: ./build.sh  (in the openhands-saia repo)
-# Source: openhands-saia commit $COMMIT$DIRTY, packed $STAMP
+# Regenerate with: ./build.sh  (in the openhands-saia-gwdg repo)
+# Source: openhands-saia-gwdg commit $COMMIT$DIRTY, packed $STAMP
 #
 # Installs the GWDG SAIA setup for OpenHands: provider + ${#MANIFEST[@]} source files.
 

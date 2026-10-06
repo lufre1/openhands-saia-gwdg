@@ -1,4 +1,4 @@
-# openhands-saia
+# openhands-saia-gwdg
 
 GWDG SAIA provider for **OpenHands** (CLI)
 
